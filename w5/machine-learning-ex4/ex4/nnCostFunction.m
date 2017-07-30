@@ -62,23 +62,44 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
+% implement the feedforward way
+a1 = [ones(m, 1) X];                 % add bias column
+z2 = a1 * Theta1';
+a2 = sigmoid(z2);                   % hidden layer
+a2 = [ones(size(a2, 1), 1) a2];
+z3 = a2 * Theta2';
+a3 = sigmoid(z3);                   % output variable
 
+% y_mul = repmat(y, size(a3, 2));     % replicate y for each classification is wrong
+% reconstruct y classes
+label_num = size(a3, 2);
+y_classes = zeros(m, label_num);
+for i = 1:label_num,
+  y_classes(:, i) = y == i;
+end;
 
+% compute cost without regularization
+cost = y_classes .* log(a3) + (1 - y_classes) .* log(1 - a3);
+J += -sum(sum(cost, 2), 1) ./ m;
 
+% add regularization with all parameters in the network but except for bias column
+J_reg = 0.5 * lambda * (sum(Theta1(:, 2:end)(:) .^ 2) + sum(Theta2(:, 2:end)(:) .^ 2)) / m;
+J += J_reg;
 
+% backpropagation algorithm begin to calculate the gradient.
+% caculate delta from output layter diff
+delta3 = a3 - y_classes;
+delta2 = (delta3 * Theta2) .* sigmoidGradient([ones(size(z2, 1), 1) z2]);
+delta2 = delta2(:, 2:end);
 
+Theta2_grad = a2' * delta3 ./ m;
+Theta2_grad = Theta2_grad';
+Theta1_grad = a1' * delta2 ./ m;
+Theta1_grad = Theta1_grad';
 
-
-
-
-
-
-
-
-
-
-
-
+% add gradient regularization
+Theta2_grad(:, 2:end) = Theta2_grad(:, 2:end) + lambda * Theta2(:, 2:end) / m;
+Theta1_grad(:, 2:end) = Theta1_grad(:, 2:end) + lambda * Theta1(:, 2:end) / m;
 
 % -------------------------------------------------------------
 
