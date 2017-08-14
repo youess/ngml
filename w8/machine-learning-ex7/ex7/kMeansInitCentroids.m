@@ -14,8 +14,14 @@ centroids = zeros(K, size(X, 2));
 %
 
 
+% Random reorder the indices of examples
+randidx = randperm(size(X, 1));
 
+% Take the first K examples as centroids
+centroids = X(randidx(1:K), :);
 
+% then compute the mean of these examples
+%centroids = mean(centroids, 2);
 
 
 
